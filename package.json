@@ -12,7 +12,8 @@
     "build-win": "electron-builder --win",
     "build-mac": "electron-builder --mac",
     "build-linux": "electron-builder --linux",
-    "build-all": "npm run build-win && npm run build-mac && npm run build-linux"
+    "build-all": "npm run build-win && npm run build-mac && npm run build-linux",
+    "dist": "npm run clean && npm install && npm run build"
   },
   "keywords": [
     "expense-tracker",
