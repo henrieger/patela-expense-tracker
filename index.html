@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <title>Patela Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>Patela, the Expense Tracker</h1>
+                    <p>Track your expenses and income for free and with maximum privacy</p>
+                </div>
+                <div class="header-nav">
+                    <button class="nav-btn" data-tab="privacy">Privacy</button>
+                    <button class="nav-btn" data-tab="about">About</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Expense Tracker Content -->
+        <div class="main-content">
+            <!-- Overview Cards -->
+            <div class="overview">
+                <div class="card income-card">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <div class="card-label">Total Income</div>
+                        <div class="card-value" id="total-income">$0.00</div>
+                    </div>
+                </div>
+                
+                <div class="card expense-card">
+                    <div class="card-icon">📉</div>
+                    <div class="card-content">
+                        <div class="card-label">Total Expenses</div>
+                        <div class="card-value" id="total-expenses">$0.00</div>
+                    </div>
+                </div>
+                
+                <div class="card balance-card">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <div class="card-label">Balance</div>
+                        <div class="card-value" id="balance">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="categories-section">
+                <div class="categories-header">
+                    <h3>Expenses by Category &bull; <button class="chart-toggle-btn" id="chart-toggle-btn">Chart View</button></h3>
+                    
+                </div>
+                <div class="categories-grid" id="categories-grid">
+                    <!-- Categories will be populated by JavaScript -->
+                </div>
+                <div class="categories-chart" id="categories-chart" style="display: none;">
+                    <canvas id="chart-canvas" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Add Transaction Button -->
+            <button class="add-transaction-btn" id="add-transaction-btn">
+                ➕ Add Transaction
+            </button>
+
+            <!-- Filters and Transaction List -->
+            <div class="transactions-section">
+                <div class="section-header">
+                    <h2>Transaction History</h2>
+                    <div class="filters">
+                        <select id="filter-category">
+                            <option value="all">All Categories</option>
+                            <option value="income">Income</option>
+                            <option value="Administrative">Administrative</option>
+                            <option value="Books & Education">Books & Education</option>
+                            <option value="Clothing & Accessories">Clothing & Accessories</option>
+                            <option value="Eat out">Eat out</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Emergency">Emergency</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Gifts & Souvenirs">Gifts & Souvenirs</option>
+                            <option value="Groceries">Groceries</option>
+                            <option value="Health & Medical">Health & Medical</option>
+                            <option value="Housing">Housing</option>
+                            <option value="Internet & Phone">Internet & Phone</option>
+                            <option value="Laundry & Cleaning">Laundry & Cleaning</option>
+                            <option value="Personal Care">Personal Care</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Sightseeing & Tours">Sightseeing & Tours</option>
+                            <option value="Sports & Fitness">Sports & Fitness</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Travel & Vacation">Travel & Vacation</option>
+                            <option value="Utilities">Utilities</option>
+                        </select>
+                        
+                        <input type="text" id="filter-tags" placeholder="Filter by tag...">
+                        
+                        <input type="date" id="filter-date-from" placeholder="From date">
+                        <input type="date" id="filter-date-to" placeholder="To date">
+                    </div>
+                </div>
+                
+                <div class="transactions-list" id="transactions-list">
+                    <div class="empty-state" id="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <p>No transactions found. Add your first transaction above!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Form (Hidden by default) -->
+        <div class="form-overlay" id="form-overlay" style="display: none;">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Add New Transaction</h2>
+                    <button class="close-btn" id="close-form-btn">✖️</button>
+                </div>
+                
+                <div class="form-content">
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="transaction-type">
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Amount ($)</label>
+                            <input type="number" step="0.01" id="amount" placeholder="0.00" required>
+                        </div>
+                        
+                        <div class="form-group" id="category-group">
+                            <label>Category</label>
+                            <select id="category">
+                                <option value="Administrative">Administrative</option>
+                                <option value="Books & Education">Books & Education</option>
+                                <option value="Clothing & Accessories">Clothing & Accessories</option>
+                                <option value="Eat out">Eat out</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Emergency">Emergency</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Gifts & Souvenirs">Gifts & Souvenirs</option>
+                                <option value="Groceries">Groceries</option>
+                                <option value="Health & Medical">Health & Medical</option>
+                                <option value="Housing">Housing</option>
+                                <option value="Internet & Phone">Internet & Phone</option>
+                                <option value="Laundry & Cleaning">Laundry & Cleaning</option>
+                                <option value="Personal Care">Personal Care</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Sightseeing & Tours">Sightseeing & Tours</option>
+                                <option value="Sports & Fitness">Sports & Fitness</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Travel & Vacation">Travel & Vacation</option>
+                                <option value="Utilities">Utilities</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" id="description" placeholder="Enter description..." required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="date" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tags (comma-separated)</label>
+                        <input type="text" id="tags" placeholder="food, urgent, work...">
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="save-transaction-btn">Add Transaction</button>
+                        <button class="btn btn-secondary" id="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Modal -->
+        <div class="modal-overlay" id="privacy-modal" style="display: none;">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2>Privacy & Security</h2>
+                    <button class="close-btn" id="close-privacy-btn">✖️</button>
+                </div>
+                <div class="modal-content">
+                    <div class="privacy-section">
+                        <p class="privacy-intro">Patela Expense Tracker is <strong>very privacy-friendly</strong>. Here's what you need to know about how it works:</p>
+                        
+                        <div class="about-card">
+                            <h4>Privacy-Safe Features</h4>
+                            <ul>
+                                <li><strong>No External APIs</strong> - App works completely offline</li>
+                                <li><strong>No internet connections</strong> - Nothing leaves your computer</li>
+                                <li><strong>No data sent to servers</strong> - All data stays local</li>
+                                <li><strong>No cloud storage</strong> - Your data remains on your device</li>
+                                <li><strong>No analytics tracking</strong> - We don't monitor your usage</li>
+                                <li><strong>No ads or third-party services</strong> - Clean experience</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-card">
+                            <h4>Local-Only Data Storage</h4>
+                            <p>All data stays on your computer in a secure SQLite database:</p>
+                            <ul>
+                                <li><strong>Mac:</strong> <code>~/Library/Application Support/patela-expense-tracker/</code></li>
+                                <li><strong>Windows:</strong> <code>%APPDATA%/patela-expense-tracker/</code></li>
+                                <li><strong>Linux:</strong> <code>~/.config/patela-expense-tracker/</code></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-card">
+                            <h4>No Data Collection</h4>
+                            <ul>
+                                <li><strong>No user tracking</strong> - We don't know who you are</li>
+                                <li><strong>No usage statistics</strong> - Your behavior isn't monitored</li>
+                                <li><strong>No personal info collection</strong> - We don't ask for details</li>
+                                <li><strong>No automatic updates that phone home</strong> - Manual updates only</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-card">
+                            <h4>What This Means</h4>
+                            <ul>
+                                <li><strong>Your financial data never leaves your computer</strong></li>
+                                <li><strong>No one can access your expense information</strong></li>
+                                <li><strong>Works completely offline</strong></li>
+                                <li><strong>No account creation or login required</strong></li>
+                                <li><strong>No privacy policy needed</strong> (since no data is collected)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-card">
+                            <h4>Privacy Score: 10/10</h4>
+                            <p>Patela Expense Tracker is as private as it gets! It's essentially like keeping a digital notebook on your computer - completely private and secure.</p>
+                            <p><strong>Major advantage:</strong> Unlike web-based expense trackers that store your financial data on their servers, Patela keeps everything local and private.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Modal -->
+        <div class="modal-overlay" id="about-modal" style="display: none;">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2>About Patela Expense Tracker</h2>
+                    <button class="close-btn" id="close-about-btn">✖️</button>
+                </div>
+                <div class="modal-content">
+                    <div class="about-section">
+                        <p>This expense tracker was built by journalist <a href="https://spagnuolo.news">Sergio Spagnuolo</a> using <a href="https://www.anthropic.com/claude-code">Claude Code</a> out of frustration by the pricing and lack of privacy of current Mac and iOS expense trackers. It is named after my dog, <a href="https://notas.spagnuolo.news/primeira-foto-das-minhas-tres-cachorras-sentadas-juntas-em-anos">Patela</a>.</p>
+                        
+                        <div class="about-card">
+                            <h4>100% Open Source</h4>
+                            <p>The complete source code is available on GitHub:</p>
+                            <p><a href="https://github.com/sergiospagnuolo/patela-expense-tracker" target="_blank" rel="noopener noreferrer">https://github.com/sergiospagnuolo/patela-expense-tracker</a></p>
+                            <p>Feel free to fork, modify, and contribute to the project!</p>
+                        </div>
+                        
+                        <div class="about-card">
+                            <h4>Technical Stack</h4>
+                            <ul>
+                                <li><strong>Electron</strong> - Cross-platform desktop app framework</li>
+                                <li><strong>Node.js</strong> - JavaScript runtime for the backend</li>
+                                <li><strong>SQLite</strong> - Local database for storing transaction data</li>
+                                <li><strong>better-sqlite3</strong> - High-performance SQLite bindings</li>
+                                <li><strong>HTML/CSS/JavaScript</strong> - Frontend interface</li>
+                                <li><strong>electron-builder</strong> - Application packaging and distribution</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-card">
+                            <h4>Design Philosophy</h4>
+                            <ul>
+                                <li><strong>Privacy First</strong> - No external connections or data collection</li>
+                                <li><strong>Local Storage</strong> - All data remains on your computer</li>
+                                <li><strong>Simplicity</strong> - Clean, intuitive interface</li>
+                                <li><strong>Open Source</strong> - Transparent and community-driven</li>
+                                <li><strong>Cross-Platform</strong> - Works on Windows, Mac, and Linux</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-card">
+                            <h4>Built with Claude Code</h4>
+                            <p>This project showcases the power of AI-assisted development using Anthropic's Claude Code. The entire application was developed through collaborative programming between human creativity and AI technical assistance.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
