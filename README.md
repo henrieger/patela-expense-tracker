@@ -7,18 +7,24 @@ A privacy-first, cross-platform desktop expense tracking application built with 
 This expense tracker was built by journalist [Sergio Spagnuolo](https://spagnuolo.news) using [Claude Code](https://www.anthropic.com/claude-code) out of frustration by the pricing and lack of privacy of current Mac and iOS expense trackers. It is named after my dog, [Patela](https://notas.spagnuolo.news/primeira-foto-das-minhas-tres-cachorras-sentadas-juntas-em-anos)</a>.
 
 ### Clone and setup
-git clone https://github.com/sergiospagnuolo/patela-expense-tracker.git
+```bash
+git clone --depth=1 https://github.com/sergiospagnuolo/patela-expense-tracker.git
 cd patela-expense-tracker
-npm install
+npm ci
+```
 
 ### Development
+```bash
 npm start              # Run the app
 npm run dev           # Run with logging
+```
 
 ### Building
+```bash
 npm run build         # Build for your platform
 npm run build-all     # Build for all platforms
 npm run dist          # Clean build from scratch
+```
 
 ## Features
 
@@ -108,7 +114,7 @@ Download the latest release for your platform:
 
 2. **Install dependencies:**
    ```bash
-   npm install
+   npm ci
    ```
 
 3. **Run in development mode:**
