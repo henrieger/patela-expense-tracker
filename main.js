@@ -67,6 +67,15 @@ ipcMain.handle('add-transaction', async (event, transaction) => {
   }
 });
 
+ipcMain.handle('update-transaction', async (event, transaction) => {
+  try {
+    return db.updateTransaction(transaction);
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+    throw error;
+  }
+});
+
 ipcMain.handle('delete-transaction', async (event, id) => {
   try {
     return db.deleteTransaction(id);

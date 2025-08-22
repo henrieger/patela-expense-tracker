@@ -71,6 +71,36 @@ class ExpenseDatabase {
     };
   }
 
+  updateTransaction(transaction) {
+    const { id, type, amount, category, description, tags, date } = transaction;
+    
+    const stmt = this.db.prepare(`
+      UPDATE transactions 
+      SET type = ?, amount = ?, category = ?, description = ?, tags = ?, date = ?
+      WHERE id = ?
+    `);
+
+    const info = stmt.run([
+      type,
+      parseFloat(amount),
+      category,
+      description,
+      JSON.stringify(tags || []),
+      date,
+      id
+    ]);
+
+    if (info.changes === 0) {
+      throw new Error(`Transaction with id ${id} not found`);
+    }
+
+    // Return the updated transaction
+    return {
+      ...transaction,
+      tags: tags || []
+    };
+  }
+
   deleteTransaction(id) {
     const stmt = this.db.prepare('DELETE FROM transactions WHERE id = ?');
     const info = stmt.run(id);
