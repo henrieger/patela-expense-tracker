@@ -10,7 +10,7 @@ This expense tracker was built by journalist [Sergio Spagnuolo](https://spagnuol
 ```bash
 git clone --depth=1 https://github.com/sergiospagnuolo/patela-expense-tracker.git
 cd patela-expense-tracker
-npm install
+npm ci
 ```
 
 ### Development
@@ -114,7 +114,7 @@ Download the latest release for your platform:
 
 2. **Install dependencies:**
    ```bash
-   npm install
+   npm ci
    ```
 
 3. **Run in development mode:**
