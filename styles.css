@@ -52,7 +52,7 @@ body {
     gap: 10px;
 }
 
-.nav-btn, .chart-toggle-btn {
+.nav-btn, .csv-export-btn, .chart-toggle-btn, .csv-import-btn {
     padding: 10px 16px;
     border: 2px solid #e2e8f0;
     background: #f7fafc;
@@ -231,6 +231,44 @@ body {
     }
     
     .modal-content {
+        padding: 20px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+    }
+    
+    .section-controls {
+        align-items: stretch;
+    }
+    
+    .filters {
+        justify-content: center;
+    }
+    
+    .csv-export-btn {
+        align-self: center;
+    }
+    
+    .transaction-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        padding: 20px;
+    }
+    
+    .transaction-amount {
+        margin-right: 0;
+        text-align: left;
+    }
+    
+    .form-content {
+        padding: 20px;
+    }
+    
+    .form-header {
         padding: 20px;
     }
 }
@@ -558,6 +596,7 @@ body {
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
+    align-items: flex-end;
 }
 
 .filters select,
@@ -795,6 +834,69 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #a0aec0;
+}
+
+/* Date Filter Groups */
+.date-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.date-filter-group label {
+    font-size: 0.8rem;
+    color: #4a5568;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+/* Clear Filters Button */
+.clear-filters-btn {
+    padding: 10px 16px;
+    border: 2px solid #e2e8f0;
+    background: #f7fafc;
+    color: #4a5568;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    height: fit-content;
+}
+
+.clear-filters-btn:hover {
+    background: #fed7d7;
+    color: #c53030;
+    border-color: #feb2b2;
+}
+
+/* Edit Button */
+.edit-btn {
+    background: #ebf8ff;
+    border: none;
+    color: #2b6cb0;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-right: 10px;
+}
+
+.edit-btn:hover {
+    background: #bee3f8;
+    color: #2a69ac;
+    transform: translateY(-1px);
+}
+
+/* Transaction Actions */
+.transaction-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 /* Notifications */

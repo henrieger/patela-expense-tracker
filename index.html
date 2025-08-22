@@ -55,7 +55,6 @@
             <div class="categories-section">
                 <div class="categories-header">
                     <h3>Expenses by Category &bull; <button class="chart-toggle-btn" id="chart-toggle-btn">Chart View</button></h3>
-                    
                 </div>
                 <div class="categories-grid" id="categories-grid">
                     <!-- Categories will be populated by JavaScript -->
@@ -74,36 +73,51 @@
             <div class="transactions-section">
                 <div class="section-header">
                     <h2>Transaction History</h2>
-                    <div class="filters">
-                        <select id="filter-category">
-                            <option value="all">All Categories</option>
-                            <option value="income">Income</option>
-                            <option value="Administrative">Administrative</option>
-                            <option value="Books & Education">Books & Education</option>
-                            <option value="Clothing & Accessories">Clothing & Accessories</option>
-                            <option value="Eat out">Eat out</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Emergency">Emergency</option>
-                            <option value="Entertainment">Entertainment</option>
-                            <option value="Gifts & Souvenirs">Gifts & Souvenirs</option>
-                            <option value="Groceries">Groceries</option>
-                            <option value="Health & Medical">Health & Medical</option>
-                            <option value="Housing">Housing</option>
-                            <option value="Internet & Phone">Internet & Phone</option>
-                            <option value="Laundry & Cleaning">Laundry & Cleaning</option>
-                            <option value="Personal Care">Personal Care</option>
-                            <option value="Shopping">Shopping</option>
-                            <option value="Sightseeing & Tours">Sightseeing & Tours</option>
-                            <option value="Sports & Fitness">Sports & Fitness</option>
-                            <option value="Transportation">Transportation</option>
-                            <option value="Travel & Vacation">Travel & Vacation</option>
-                            <option value="Utilities">Utilities</option>
-                        </select>
-                        
-                        <input type="text" id="filter-tags" placeholder="Filter by tag...">
-                        
-                        <input type="date" id="filter-date-from" placeholder="From date">
-                        <input type="date" id="filter-date-to" placeholder="To date">
+                    <div class="action-buttons">
+                        <button class="csv-import-btn" id="csv-import-btn">Import CSV</button>
+                        <button class="csv-export-btn" id="csv-export-btn">Download CSV</button>
+                    </div>
+                    <div class="section-controls">
+                        <div class="filters">
+                            <select id="filter-category">
+                                <option value="all">All Categories</option>
+                                <option value="income">Income</option>
+                                <option value="Administrative">Administrative</option>
+                                <option value="Books & Education">Books & Education</option>
+                                <option value="Clothing & Accessories">Clothing & Accessories</option>
+                                <option value="Eat out">Eat out</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Emergency">Emergency</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Gifts & Souvenirs">Gifts & Souvenirs</option>
+                                <option value="Groceries">Groceries</option>
+                                <option value="Health & Medical">Health & Medical</option>
+                                <option value="Housing">Housing</option>
+                                <option value="Internet & Phone">Internet & Phone</option>
+                                <option value="Laundry & Cleaning">Laundry & Cleaning</option>
+                                <option value="Personal Care">Personal Care</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Sightseeing & Tours">Sightseeing & Tours</option>
+                                <option value="Sports & Fitness">Sports & Fitness</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Travel & Vacation">Travel & Vacation</option>
+                                <option value="Utilities">Utilities</option>
+                            </select>
+                            
+                            <input type="text" id="filter-tags" placeholder="Filter by tag...">
+                            
+                            <div class="date-filter-group">
+                                <label for="filter-date-from">Start Date</label>
+                                <input type="date" id="filter-date-from" placeholder="From date">
+                            </div>
+                            
+                            <div class="date-filter-group">
+                                <label for="filter-date-to">End Date</label>
+                                <input type="date" id="filter-date-to" placeholder="To date">
+                            </div>
+                            
+                            <button class="clear-filters-btn" id="clear-filters-btn">Clear</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -120,11 +134,12 @@
         <div class="form-overlay" id="form-overlay" style="display: none;">
             <div class="form-container">
                 <div class="form-header">
-                    <h2>Add New Transaction</h2>
+                    <h2 id="form-title">Add New Transaction</h2>
                     <button class="close-btn" id="close-form-btn">✖️</button>
                 </div>
                 
                 <div class="form-content">
+                    <input type="hidden" id="edit-transaction-id" value="">
                     <div class="form-group">
                         <label>Type</label>
                         <select id="transaction-type">
@@ -135,7 +150,7 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Amount ($)</label>
+                            <label>Amount ($) *</label>
                             <input type="number" step="0.01" id="amount" placeholder="0.00" required>
                         </div>
                         
@@ -168,12 +183,12 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Description</label>
+                            <label>Description *</label>
                             <input type="text" id="description" placeholder="Enter description..." required>
                         </div>
                         
                         <div class="form-group">
-                            <label>Date</label>
+                            <label>Date *</label>
                             <input type="date" id="date" required>
                         </div>
                     </div>
@@ -190,6 +205,53 @@
                 </div>
             </div>
         </div>
+
+        <!-- CSV Import Modal -->
+<div class="modal-overlay" id="csv-import-modal" style="display: none;">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>Import CSV Data</h2>
+            <button class="close-btn" id="close-csv-import-btn">✖️</button>
+        </div>
+        <div class="modal-content">
+            <div class="import-section">
+                <p class="import-intro">To import data, make sure your CSV file has the same format as shown below:</p>
+                <p class="import-note">Make a copy of this sample in <a href="https://docs.google.com/spreadsheets/d/1rs1Z6i64RWEIVlGZUMr6wlkE3sf187S-BPwNNtppnAg/copy?usp=sharing" download>Google Sheets</a>.</p>
+                <br>
+                
+                <div class="about-card">
+                    <h4>Sample CSV Format</h4>
+                    <div class="csv-sample">
+                        <pre>Date,Type,Category,Description,Amount,Tags
+2024-08-20,expense,Groceries,"Weekly shopping",-85.50,"food; weekly"
+2024-08-21,income,Income,"Freelance payment",500.00,""
+2024-08-22,expense,Transportation,"Gas station",-45.20,"gas; car"</pre>
+                    </div>
+                </div>
+                
+                <div class="about-card">
+                    <h4>Important Notes</h4>
+                    <ul>
+                        <li><strong>Headers required:</strong> First row must contain exact column names</li>
+                        <li><strong>Date format:</strong> YYYY-MM-DD (e.g., 2024-08-20)</li>
+                        <li><strong>Type:</strong> Must be either "income" or "expense"</li>
+                        <li><strong>Amount:</strong> Positive for income, negative for expenses</li>
+                        <li><strong>Category:</strong> Must match existing categories or will be set to "Administrative"</li>
+                        <li><strong>Tags:</strong> Multiple tags separated by semicolons (;)</li>
+                        <li><strong>Quotes:</strong> Use quotes around descriptions and tags if they contain commas</li>
+                    </ul>
+                </div>
+                
+                <div class="file-upload-section">
+                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                    <button class="btn btn-primary" id="select-file-btn">Select CSV File</button>
+                    <p id="file-name" class="file-name"></p>
+                    <button class="btn btn-secondary" id="import-data-btn" style="display: none;">Import Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- Privacy Modal -->
         <div class="modal-overlay" id="privacy-modal" style="display: none;">
@@ -264,7 +326,7 @@
                 </div>
                 <div class="modal-content">
                     <div class="about-section">
-                        <p>This expense tracker was built by journalist <a href="https://spagnuolo.news">Sergio Spagnuolo</a> using <a href="https://www.anthropic.com/claude-code">Claude Code</a> out of frustration by the pricing and lack of privacy of current Mac and iOS expense trackers. It is named after my dog, <a href="https://notas.spagnuolo.news/primeira-foto-das-minhas-tres-cachorras-sentadas-juntas-em-anos">Patela</a>.</p>
+                        <p>This expense tracker was built by journalist <a href="https://spagnuolo.news">Sergio Spagnuolo</a> using <a href="https://www.anthropic.com/claude-code">Claude Code</a> out of frustration by the pricing and lack of privacy of current Mac and iOS expense trackers.</p>
                         
                         <div class="about-card">
                             <h4>100% Open Source</h4>

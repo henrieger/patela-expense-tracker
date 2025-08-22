@@ -75,11 +75,43 @@ function setupEventListeners() {
     const filterDateFrom = document.getElementById('filter-date-from');
     const filterDateTo = document.getElementById('filter-date-to');
     const chartToggleBtn = document.getElementById('chart-toggle-btn');
+    const csvExportBtn = document.getElementById('csv-export-btn');
+    const csvImportBtn = document.getElementById('csv-import-btn');
+    const clearFiltersBtn = document.getElementById('clear-filters-btn');
+    
+    // CSV import modal elements
+    const csvImportModal = document.getElementById('csv-import-modal');
+    const csvFileInput = document.getElementById('csv-file-input');
+    const selectFileBtn = document.getElementById('select-file-btn');
+    const importDataBtn = document.getElementById('import-data-btn');
     
     // Check if elements exist
     if (!addTransactionBtn || !formOverlay) {
         console.error('Essential elements not found!');
         return;
+    }
+    
+    // CSV functionality
+    if (csvExportBtn) {
+        csvExportBtn.addEventListener('click', exportToCSV);
+    }
+    
+    if (csvImportBtn) {
+        csvImportBtn.addEventListener('click', () => {
+            csvImportModal.style.display = 'flex';
+        });
+    }
+    
+    if (selectFileBtn && csvFileInput) {
+        selectFileBtn.addEventListener('click', () => {
+            csvFileInput.click();
+        });
+        
+        csvFileInput.addEventListener('change', handleFileSelect);
+    }
+    
+    if (importDataBtn) {
+        importDataBtn.addEventListener('click', importCSVData);
     }
     
     // Chart toggle functionality
@@ -101,6 +133,8 @@ function setupEventListeners() {
     const aboutModal = document.getElementById('about-modal');
     const closePrivacyBtn = document.getElementById('close-privacy-btn');
     const closeAboutBtn = document.getElementById('close-about-btn');
+    const closeCsvImportBtn = document.getElementById('close-csv-import-btn');
+    const fileNameDisplay = document.getElementById('file-name');
     
     navButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -127,6 +161,13 @@ function setupEventListeners() {
         });
     }
     
+    if (closeCsvImportBtn) {
+        closeCsvImportBtn.addEventListener('click', () => {
+            csvImportModal.style.display = 'none';
+            resetImportForm();
+        });
+    }
+    
     // Close modals when clicking overlay
     if (privacyModal) {
         privacyModal.addEventListener('click', (e) => {
@@ -144,6 +185,15 @@ function setupEventListeners() {
         });
     }
     
+    if (csvImportModal) {
+        csvImportModal.addEventListener('click', (e) => {
+            if (e.target === csvImportModal) {
+                csvImportModal.style.display = 'none';
+                resetImportForm();
+            }
+        });
+    }
+    
     // Form handling
     addTransactionBtn.addEventListener('click', showForm);
     closeFormBtn.addEventListener('click', hideForm);
@@ -156,6 +206,11 @@ function setupEventListeners() {
     filterTags.addEventListener('input', applyFilters);
     if (filterDateFrom) filterDateFrom.addEventListener('change', applyFilters);
     if (filterDateTo) filterDateTo.addEventListener('change', applyFilters);
+    
+    // Clear filters
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', clearFilters);
+    }
     
     // Close form when clicking overlay
     formOverlay.addEventListener('click', (e) => {
@@ -173,6 +228,10 @@ function setupEventListeners() {
             hideForm();
             if (privacyModal) privacyModal.style.display = 'none';
             if (aboutModal) aboutModal.style.display = 'none';
+            if (csvImportModal) {
+                csvImportModal.style.display = 'none';
+                resetImportForm();
+            }
         }
     });
     
@@ -360,7 +419,10 @@ function createTransactionElement(transaction) {
     const div = document.createElement('div');
     div.className = 'transaction-item';
     
-    const formattedDate = new Date(transaction.date).toLocaleDateString('en-US', {
+    // Fix date display - treat the date as local, not UTC
+    const dateParts = transaction.date.split('-');
+    const localDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+    const formattedDate = localDate.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
@@ -386,10 +448,13 @@ function createTransactionElement(transaction) {
         </div>
         <div class="transaction-amount">
             <div class="amount-value ${transaction.type}">
-                ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}
+                ${transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
             </div>
         </div>
-        <button class="delete-btn" onclick="deleteTransaction(${transaction.id})">Delete</button>
+        <div class="transaction-actions">
+            <button class="edit-btn" onclick="editTransaction(${transaction.id})">Edit</button>
+            <button class="delete-btn" onclick="deleteTransaction(${transaction.id})">Delete</button>
+        </div>
     `;
     
     return div;
@@ -409,12 +474,15 @@ function hideForm() {
 }
 
 function clearForm() {
+    document.getElementById('edit-transaction-id').value = '';
     document.getElementById('amount').value = '';
     document.getElementById('description').value = '';
     document.getElementById('tags').value = '';
     document.getElementById('transaction-type').value = 'expense';
     document.getElementById('category').value = 'Administrative';
     document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('form-title').textContent = 'Add New Transaction';
+    document.getElementById('save-transaction-btn').textContent = 'Add Transaction';
     handleTypeChange();
 }
 
@@ -432,6 +500,9 @@ function handleTypeChange() {
 async function handleSaveTransaction() {
     console.log('Save transaction clicked');
     
+    const editId = document.getElementById('edit-transaction-id').value;
+    const isEditing = !!editId;
+    
     const amount = document.getElementById('amount').value;
     const description = document.getElementById('description').value;
     const date = document.getElementById('date').value;
@@ -442,7 +513,7 @@ async function handleSaveTransaction() {
         .map(tag => tag.trim())
         .filter(tag => tag);
     
-    console.log('Form data:', { amount, description, date, type, category, tags });
+    console.log('Form data:', { isEditing, editId, amount, description, date, type, category, tags });
     
     // Validation
     if (!amount || !description || !date) {
@@ -457,7 +528,7 @@ async function handleSaveTransaction() {
         return;
     }
     
-    const transaction = {
+    const transactionData = {
         type,
         amount: parseFloat(amount),
         category,
@@ -466,14 +537,35 @@ async function handleSaveTransaction() {
         date
     };
     
-    console.log('Saving transaction:', transaction);
+    if (isEditing) {
+        transactionData.id = parseInt(editId);
+    }
+    
+    console.log('Saving transaction:', transactionData);
     
     try {
-        const savedTransaction = await window.electronAPI.addTransaction(transaction);
-        console.log('Transaction saved:', savedTransaction);
+        let savedTransaction;
+        if (isEditing) {
+            savedTransaction = await window.electronAPI.updateTransaction(transactionData);
+            console.log('Transaction updated:', savedTransaction);
+            
+            // Update local state
+            const index = transactions.findIndex(t => t.id === parseInt(editId));
+            if (index >= 0) {
+                transactions[index] = savedTransaction;
+            }
+            
+            showNotification('Transaction updated successfully!', 'success');
+        } else {
+            savedTransaction = await window.electronAPI.addTransaction(transactionData);
+            console.log('Transaction saved:', savedTransaction);
+            
+            // Update local state
+            transactions.unshift(savedTransaction);
+            
+            showNotification('Transaction added successfully!', 'success');
+        }
         
-        // Update local state
-        transactions.unshift(savedTransaction);
         applyFilters();
         
         // Update displays
@@ -482,7 +574,6 @@ async function handleSaveTransaction() {
         
         // Clear and hide form
         hideForm();
-        showNotification('Transaction added successfully!', 'success');
         
     } catch (error) {
         console.error('Error saving transaction:', error);
@@ -561,6 +652,264 @@ function applyFilters() {
     });
     
     updateTransactionsList();
+}
+
+function exportToCSV() {
+    console.log('Exporting transactions to CSV...');
+    
+    if (filteredTransactions.length === 0) {
+        showNotification('No transactions to export', 'error');
+        return;
+    }
+    
+    // CSV headers
+    const headers = ['Date', 'Type', 'Category', 'Description', 'Amount', 'Tags'];
+    
+    // Convert transactions to CSV rows
+    const csvRows = [
+        headers.join(','), // Header row
+        ...filteredTransactions.map(transaction => {
+            const tags = transaction.tags ? transaction.tags.join('; ') : '';
+            const amount = transaction.type === 'income' ? transaction.amount : -transaction.amount;
+            
+            return [
+                transaction.date,
+                transaction.type,
+                transaction.category,
+                `"${transaction.description.replace(/"/g, '""')}"`, // Escape quotes
+                amount.toFixed(2),
+                `"${tags.replace(/"/g, '""')}"` // Escape quotes in tags
+            ].join(',');
+        })
+    ];
+    
+    // Create CSV content
+    const csvContent = csvRows.join('\n');
+    
+    // Create download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        
+        // Generate filename with current date
+        const today = new Date().toISOString().split('T')[0];
+        const filename = `patela-expenses-${today}.csv`;
+        link.setAttribute('download', filename);
+        
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showNotification(`Exported ${filteredTransactions.length} transactions to ${filename}`, 'success');
+    } else {
+        showNotification('CSV export not supported in this browser', 'error');
+    }
+}
+
+let selectedFile = null;
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    const fileNameDisplay = document.getElementById('file-name');
+    const importDataBtn = document.getElementById('import-data-btn');
+    
+    if (file && file.type === 'text/csv') {
+        selectedFile = file;
+        fileNameDisplay.textContent = `Selected: ${file.name}`;
+        importDataBtn.style.display = 'inline-block';
+    } else {
+        showNotification('Please select a valid CSV file', 'error');
+        resetImportForm();
+    }
+}
+
+function resetImportForm() {
+    selectedFile = null;
+    const csvFileInput = document.getElementById('csv-file-input');
+    const fileNameDisplay = document.getElementById('file-name');
+    const importDataBtn = document.getElementById('import-data-btn');
+    
+    if (csvFileInput) csvFileInput.value = '';
+    if (fileNameDisplay) fileNameDisplay.textContent = '';
+    if (importDataBtn) importDataBtn.style.display = 'none';
+}
+
+function importCSVData() {
+    if (!selectedFile) {
+        showNotification('Please select a CSV file first', 'error');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const csvText = e.target.result;
+            const lines = csvText.split('\n').map(line => line.trim()).filter(line => line);
+            
+            if (lines.length < 2) {
+                showNotification('CSV file must have at least a header row and one data row', 'error');
+                return;
+            }
+            
+            // Parse header
+            const header = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+            const expectedHeaders = ['Date', 'Type', 'Category', 'Description', 'Amount', 'Tags'];
+            
+            if (!expectedHeaders.every(h => header.includes(h))) {
+                showNotification('CSV must contain headers: Date, Type, Category, Description, Amount, Tags', 'error');
+                return;
+            }
+            
+            const headerMap = {};
+            expectedHeaders.forEach(h => {
+                headerMap[h] = header.indexOf(h);
+            });
+            
+            let importedCount = 0;
+            let errorCount = 0;
+            
+            // Process data rows
+            for (let i = 1; i < lines.length; i++) {
+                try {
+                    const row = parseCSVRow(lines[i]);
+                    
+                    if (row.length < 6) continue; // Skip incomplete rows
+                    
+                    const date = row[headerMap['Date']];
+                    const type = row[headerMap['Type']].toLowerCase();
+                    const category = row[headerMap['Category']] || 'Administrative';
+                    const description = row[headerMap['Description']];
+                    const amount = Math.abs(parseFloat(row[headerMap['Amount']] || 0));
+                    const tags = row[headerMap['Tags']] ? row[headerMap['Tags']].split(';').map(t => t.trim()).filter(t => t) : [];
+                    
+                    // Validate required fields
+                    if (!date || !type || !description || amount <= 0) {
+                        errorCount++;
+                        continue;
+                    }
+                    
+                    // Validate type
+                    if (type !== 'income' && type !== 'expense') {
+                        errorCount++;
+                        continue;
+                    }
+                    
+                    // Validate date format
+                    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                        errorCount++;
+                        continue;
+                    }
+                    
+                    // Validate category
+                    const validCategory = categories.includes(category) ? category : 'Administrative';
+                    
+                    const transaction = {
+                        type,
+                        amount,
+                        category: type === 'income' ? 'Income' : validCategory,
+                        description,
+                        tags,
+                        date
+                    };
+                    
+                    // Save to database
+                    const savedTransaction = await window.electronAPI.addTransaction(transaction);
+                    transactions.unshift(savedTransaction);
+                    importedCount++;
+                    
+                } catch (error) {
+                    console.error('Error processing row:', error);
+                    errorCount++;
+                }
+            }
+            
+            // Update displays
+            await updateOverview();
+            await updateCategoriesDisplay();
+            applyFilters();
+            
+            // Close modal and reset form
+            document.getElementById('csv-import-modal').style.display = 'none';
+            resetImportForm();
+            
+            // Show results
+            let message = `Successfully imported ${importedCount} transactions.`;
+            if (errorCount > 0) {
+                message += ` ${errorCount} rows had errors and were skipped.`;
+            }
+            showNotification(message, 'success');
+            
+        } catch (error) {
+            console.error('CSV import error:', error);
+            showNotification('Error reading CSV file: ' + error.message, 'error');
+        }
+    };
+    
+    reader.readAsText(selectedFile);
+}
+
+function parseCSVRow(row) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        
+        if (char === '"' && (i === 0 || row[i - 1] === ',')) {
+            inQuotes = true;
+        } else if (char === '"' && inQuotes && (i === row.length - 1 || row[i + 1] === ',')) {
+            inQuotes = false;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current.trim());
+    return result.map(field => field.replace(/^"|"$/g, '')); // Remove surrounding quotes
+}
+
+function clearFilters() {
+    document.getElementById('filter-category').value = 'all';
+    document.getElementById('filter-tags').value = '';
+    document.getElementById('filter-date-from').value = '';
+    document.getElementById('filter-date-to').value = '';
+    
+    applyFilters();
+}
+
+function editTransaction(id) {
+    const transaction = transactions.find(t => t.id === id);
+    if (!transaction) {
+        showNotification('Transaction not found', 'error');
+        return;
+    }
+    
+    // Update form title and button
+    document.getElementById('form-title').textContent = 'Edit Transaction';
+    document.getElementById('save-transaction-btn').textContent = 'Update Transaction';
+    
+    // Fill form with existing data
+    document.getElementById('edit-transaction-id').value = transaction.id;
+    document.getElementById('transaction-type').value = transaction.type;
+    document.getElementById('amount').value = transaction.amount;
+    document.getElementById('description').value = transaction.description;
+    document.getElementById('date').value = transaction.date;
+    document.getElementById('tags').value = transaction.tags.join(', ');
+    
+    if (transaction.type === 'expense') {
+        document.getElementById('category').value = transaction.category;
+    }
+    
+    handleTypeChange();
+    showForm();
 }
 
 function showNotification(message, type = 'info') {

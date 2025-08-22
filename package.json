@@ -4,18 +4,18 @@
   "description": "Track your expenses and income for free and with maximum privacy",
   "main": "main.js",
   "scripts": {
-  "start": "electron .",
-  "dev": "electron . --enable-logging", 
-  "postinstall": "./node_modules/.bin/electron-rebuild",
-  "clean": "rm -rf dist/",
-  "clean-all": "rm -rf dist/ node_modules/",
-  "rebuild": "npm install && ./node_modules/.bin/electron-rebuild",
-  "build": "electron-builder",
-  "build-win": "electron-builder --win",
-  "build-mac": "electron-builder --mac",
-  "build-linux": "electron-builder --linux", 
-  "build-all": "npm run build-win && npm run build-mac && npm run build-linux",
-  "dist": "npm run clean && npm install && npm run build"
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "postinstall": "./node_modules/.bin/electron-rebuild",
+    "clean": "rm -rf dist/",
+    "clean-all": "rm -rf dist/ node_modules/",
+    "rebuild": "npm install && ./node_modules/.bin/electron-rebuild",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "build-all": "npm run build-win && npm run build-mac && npm run build-linux",
+    "dist": "npm run clean && npm install && npm run build"
   },
   "keywords": [
     "expense-tracker",
@@ -36,7 +36,8 @@
     "electron-rebuild": "^3.2.9"
   },
   "dependencies": {
-    "better-sqlite3": "^9.2.2"
+    "better-sqlite3": "^9.2.2",
+    "claude": "^0.1.1"
   },
   "build": {
     "appId": "com.patela.expense-tracker",
@@ -58,11 +59,16 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "ia32"]
+          "arch": [
+            "x64",
+            "ia32"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "assets/icon.ico"
@@ -71,11 +77,17 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "assets/icon.icns"
@@ -84,15 +96,21 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "rpm",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "assets/icon.png",
