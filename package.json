@@ -4,16 +4,18 @@
   "description": "Track your expenses and income for free and with maximum privacy",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron . --enable-logging",
-    "rebuild": "npx electron-rebuild -f -w better-sqlite3",
-    "prebuild": "npm run rebuild",
-    "build": "electron-builder",
-    "build-win": "electron-builder --win",
-    "build-mac": "electron-builder --mac",
-    "build-linux": "electron-builder --linux",
-    "build-all": "npm run build-win && npm run build-mac && npm run build-linux",
-    "dist": "npm run clean && npm install && npm run build"
+  "start": "electron .",
+  "dev": "electron . --enable-logging", 
+  "postinstall": "./node_modules/.bin/electron-rebuild",
+  "clean": "rm -rf dist/",
+  "clean-all": "rm -rf dist/ node_modules/",
+  "rebuild": "npm install && ./node_modules/.bin/electron-rebuild",
+  "build": "electron-builder",
+  "build-win": "electron-builder --win",
+  "build-mac": "electron-builder --mac",
+  "build-linux": "electron-builder --linux", 
+  "build-all": "npm run build-win && npm run build-mac && npm run build-linux",
+  "dist": "npm run clean && npm install && npm run build"
   },
   "keywords": [
     "expense-tracker",
@@ -22,7 +24,11 @@
     "electron",
     "desktop-app"
   ],
-  "author": "Patela",
+  "author": {
+    "name": "Sergio Spagnuolo",
+    "email": "sergio@spagnuolo.news",
+    "url": "https://spagnuolo.news"
+  },
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.0.0",
