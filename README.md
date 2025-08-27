@@ -6,6 +6,9 @@ A privacy-first, cross-platform desktop expense tracking application built with 
 
 This expense tracker was built by journalist [Sergio Spagnuolo](https://spagnuolo.news) using [Claude Code](https://www.anthropic.com/claude-code) out of frustration by the pricing and lack of privacy of current Mac and iOS expense trackers. It is named after my dog, [Patela](https://notas.spagnuolo.news/primeira-foto-das-minhas-tres-cachorras-sentadas-juntas-em-anos)</a>.
 
+<img width="950" height="1037" alt="image" src="https://github.com/user-attachments/assets/66747e34-6bf8-41d8-9253-054582c64ae1" />
+
+
 ### Clone and setup
 ```bash
 git clone --depth=1 https://github.com/sergiospagnuolo/patela-expense-tracker.git
